@@ -14,19 +14,27 @@ addons:
   apt:
     packages:
       - libeigen3-dev
+      - libboost-math-dev
   homebrew:
     packages:
       - eigen
 
 install:
-  - cd ${TRAVIS_BUILD_DIR}
-  - curl https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz -L -o boost_1_69_0.tar.gz
-  - tar xzf boost_1_69_0.tar.gz
-  - cd boost_1_69_0
-  - ./bootstrap.sh --prefix=${TRAVIS_BUILD_DIR}/usr
-  - travis_wait ./b2 -d0 -q --with-math --with-test --with-system install
+  - if [ "${TRAVIS_OS_NAME}" == "linux" ] ; then 
+      cd ${TRAVIS_BUILD_DIR} ; 
+      curl https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz -L -o boost_1_69_0.tar.gz ; 
+      tar xzf boost_1_69_0.tar.gz ; 
+      cd boost_1_69_0 ; 
+      ./bootstrap.sh --prefix=${TRAVIS_BUILD_DIR}/usr ; 
+      travis_wait ./b2 -d0 -q --with-math --with-test --with-system install ;
+    fi
 
 script:
   - cd ${TRAVIS_BUILD_DIR}
-  - make all CXXFLAGS_EXTRA="-I${TRAVIS_BUILD_DIR}/usr/include"
+  - if [ "${TRAVIS_OS_NAME}" == "linux" ] ; then
+      make all CXXFLAGS_EXTRA="-I${TRAVIS_BUILD_DIR}/usr/include" ;
+    fi
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ] ; then
+      make all CXXFLAGS_EXTRA="-I/usr/local/include" ;
+    fi
   - make tests
